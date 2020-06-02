@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<title>ATHENA'S KISS</title>
+		<link rel="stylesheet" href="stylesheet/common.css" />
+		<link rel="stylesheet" href="stylesheet/style.css" />
+		<link rel="icon" type="image/x-icon" href='images/favicon.ico' />
+		<script type="text/javascript" src="javascript/jquery.js"></script>
+		<script type="text/javascript" src="javascript/language.js"></script>
+		<script type="text/javascript" src="javascript/vue.js"></script>
+		<script type="text/javascript" src="javascript/global.js"></script>
+		<script type="text/javascript" src="javascript/data.js"></script>
+		<script type="text/javascript" src="javascript/web3.min.js"></script>
+		<script type="text/javascript" src="javascript/truffle-contract.js"></script>
+		<script type="text/javascript" src="javascript/clipboard.min.js.js"></script>
+
+	</head>
+
+	<body>
+		<div id="app" v-cloak>
+
+			<div class="header">
+				<!--header start-->
+
+				<div class="container">
+					<div class="nav_btn" @click="displayMenu">
+						<span></span>
+						<span></span>
+						<span></span>
+					</div>
+
+					<div class="nav">
+						<ul>
+							<li v-for="(value,index) in langList" @click="changeLang(index)">{{value}}</li>
+						</ul>
+					</div>
+
+					<div class="nav_mobile" v-show="menu">
+						<div class="bg">
+							<ul>
+								<li v-for="(value,index) in langList" @click="changeLang(index)">{{value}}</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="logo"><img src="images/logo.png"></div>
+					<div class="title"><span>{{langItem.com.title}}</span></div>
+
+					<div class="intro">
+						<h3>{{langItem.game.title}}</h3>
+						<p>{{langItem.game.intro}}</p>
+					</div>
+
+				</div>
+
+			</div>
+			<!--header end-->
+			
+			<div class="notice" style="margin: 8px; margin-bottom: 15px;">
+				<img src="images/notice.jpg" width="100%" height="auto">
+			</div>
+
+			<div class="join block_common">
+				<!--join start-->
+				<div class="container">
+
+					<div class="tab">
+
+						<ul class="tab_nav">
+							<li :class="currentItem=='join'?'active':' '" @click="changeTab('join')">{{langItem.game.join}}</li>
+							<li :class="currentItem=='invite'?'active':' '" @click="changeTab('invite')">{{langItem.game.invite}}</li>
+							<li :class="currentItem=='rule'?'active':' '" @click="changeTab('rule')">{{langItem.com.rule}}</li>
+						</ul>
+						<div class="clear"></div>
+
+						<div class="tab_box" v-show="currentItem=='join'">
+							<!--join start-->
+
+							<div class="item">
+								<ul>
+									<li  v-for="(val,index) in tabData.joinCount[stage]" :class="quantity==val ?'cur':''" @click="getQuantity(val)">{{index}}</li>
+								</ul>
+								<div class="clear"></div>
+							</div>
+
+							<div class="form_box">
+								<div class="input_box"><input type="number" v-model.numbe="quantity" /></div>
+								<span>ETH</span>
+
+								<div class="balance">{{langItem.com.balance}}：<em>{{ethBalance | numFilter}}</em> ETH</div>
+							</div>
+
+							<div class="sub_btn"><button @click="investIn">{{langItem.game.send}} ETH</button></div>
+
+						</div>
+						<!--join end-->
+
+						<div class="tab_box" v-show="currentItem=='invite'">
+							<!--invite start-->
+							<div class="invite">
+								<ul>
+									<li>{{langItem.game.myID}}：{{playerID}}</li>
+									
+									<li>{{langItem.game.share_count}}：{{team.direct.nodes}}</li>
+									
+									<li>{{langItem.game.my_share}}：{{tabData.superiorID}}</li>
+									
+									<li>{{langItem.game.myAddress}}：{{tabData.address}}</li>
+									<li>{{langItem.game.invite_link}}：
+										<span id="url">
+                                          {{formatURL}}
+										</span>
+									</li>
+								</ul>
+							</div>
+							<div class="sub_btn"><button @click="copy" class="btn" data-clipboard-target="#url">{{langItem.game.copy}}</button></div>
+						</div>
+						<!--invite end-->
+
+						<div class="tab_box" v-show="currentItem=='rule'">
+							<!--rules start-->
+							<div class="rules">
+								<h3 class="rules_title">{{langItem.game.rule_title}}</h3>
+								<div class="rule_text">{{langItem.game.rule_intro}}</div>
+							</div>
+						</div>
+						<!--rules end-->
+
+					</div>
+				</div>
+			</div>
+			<!--join end-->
+
+			<div class="block_box block_common">
+				<div class="container">
+					<!--statistics start-->
+					<div class="atk">
+						<h3>{{langItem.game.arena}}</h3></div>
+					<h3 class="common_title"><span>{{langItem.statistics.statistics}}</span></h3>
+					<div class="my_level">
+						<span>
+							        {{langItem.statistics.my_level}} <font>A{{otherData.grade}}</font>
+									
+						</span>
+					</div>
+
+					<div class="block_list">
+						
+						<div class="block_item"><!--my income-->
+                            <h3>{{langItem.income.title}}</h3>
+							<ul>
+								<li><span>{{income.unsettled | numFilter}} ETH <button class="btns" @click="calc" v-if="income.unsettled > 0">{{langItem.income.settle}}</button></span>{{langItem.income.unsettled_income}}</li>
+								<li>
+									<span>{{income.gameReward | numFilter}} ETH <button class="btns" @click="outReward" v-if="income.gameReward > 0">{{langItem.income.gameReward}}</button></span></span>{{langItem.income.gameReward_income}}
+									
+								</li>
+								<li><span>{{income.limit | numFilter}} ETH</span>{{langItem.income.limit_income}}</li>
+								<li>
+									<span  id="coundDown" v-if="income.limit> 0 && redeem == 0"></span>
+									
+									<span v-else>{{langItem.com.noInvest}}</span>
+									{{langItem.income.countDown}}
+								</li>
+								<li><span>{{income.statics | numFilter}} ETH</span>{{langItem.income.static_income}}</li>
+								<li>
+									<span>{{income.dynamic.total | numFilter}} ETH</span>{{langItem.income.dynamic_income}}
+									<p class="color999">
+										{{langItem.income.tillage}}：{{income.dynamic.tillage | numFilter}} ETH，
+										{{langItem.income.merit}}：{{income.dynamic.merit | numFilter}} ETH
+									</p>
+								</li>
+							</ul>
+						</div><!--my income end-->
+						
+						<div class="block_item"><!--my team-->
+                            <h3>{{langItem.team.my_team}}</h3>
+							<ul>
+								<li><span>{{team.direct.nodes}}</span>{{langItem.statistics.direct_node}}</li>
+								<li>
+									<span>{{team.direct.achievement | numFilter}} ETH</span>{{langItem.statistics.direct_achievement}}
+								</li>
+								<li><span>{{team.group.nodes}}</span>{{langItem.team.team_node}}</li>
+								<li><span>{{team.group.largeArea | numFilter}} ETH</span>{{langItem.team.large_area}}</li>
+								
+								<li><span>{{team.group.smallArea | numFilter}} ETH</span>{{langItem.team.small_area}}</li>
+							</ul>
+						</div><!--my team end-->
+						
+						<div class="block_item"><!--other Data-->
+                            <h3>{{langItem.statistics.otherData}}</h3>
+							<ul>
+								<li>
+									<span class="stage" v-if="stage==1">{{langItem.statistics.genesis}}</span>
+									<span class="stage" v-else-if="stage==2">{{langItem.statistics.revival}}</span>
+									<span class="stage" v-else>{{langItem.statistics.prosperous}}</span>
+									{{langItem.statistics.stage}}</li>
+								<li>
+									
+									<span v-if="calm==true">
+										{{langItem.statistics.yes}}
+										
+									</span>
+									<span v-else>
+										<font v-if="redeem==0">{{langItem.statistics.no}}</font>
+										
+									</span>
+									{{langItem.statistics.calm}}
+								</li>
+								
+								
+								
+							</ul>
+						</div><!--other Data end-->
+
+					</div>
+
+				</div>
+
+			</div>
+			<!--statistics end-->
+
+			<layer-up v-show="balanceError" :title="langItem.com.tip" :message="langItem.com.balanceError"></layer-up>
+			<layer-up v-show="canPlay" :title="langItem.com.tip" :message="langItem.game.canPlay"></layer-up>
+			<layer-up v-show="copySuccess" :title="langItem.com.tip" :message="langItem.com.copySuccess"></layer-up>
+			<layer-up v-show="sendError1" :title="langItem.com.tip" :message="langItem.com.send_error1"></layer-up>
+			<layer-up v-show="sendError2" :title="langItem.com.tip" :message="langItem.com.send_error2"></layer-up>
+			<layer-up v-show="sendError3" :title="langItem.com.tip" :message="langItem.com.send_error3"></layer-up>
+			<layer-up v-show="quitError" :title="langItem.com.tip" :message="langItem.com.quitError"></layer-up>
+			<layer-up v-show="ingError" :title="langItem.com.tip" :message="langItem.com.ingError"></layer-up>
+			<layer-up v-show="lowerError" :title="langItem.com.tip" :message="langItem.com.lowerError"></layer-up>
+			<layer-up v-show="recommendError" :title="langItem.com.tip" :message="langItem.com.noId"></layer-up>
+		</div>
+		<script type="text/javascript " src="javascript/abi.js "></script>
+
+	</body>
+
+</html>
